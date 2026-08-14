@@ -68,8 +68,6 @@ class AtlasManager:
         else:
             piece = atlas_surface.subsurface(pygame.Rect(x, y, w, h)).copy()
 
-        piece = atlas_surface.subsurface(pygame.Rect(x, y, w, h))
-
         canvas = pygame.Surface((srcw, srch), pygame.SRCALPHA)
         paste_x = int(srcw / 2 + offx - piece.get_width() / 2)
         paste_y = int(srch / 2 - offy - piece.get_height() / 2)

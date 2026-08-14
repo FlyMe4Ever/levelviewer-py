@@ -37,7 +37,7 @@ def process_layer(layer, map_w, map_h, prefix_id, atlas_mgr):
     for obj in layer.findall('Obj'):
         objct = {}
         objct["x"] = float(obj.attrib.get("x", obj.attrib.get("X", 0))) * scale_x
-        objct["y"] = float(obj.attrib.get("y", obj.attrib.get("Y", 0))) * scale_y
+        objct["y"] = map_h - float(obj.attrib.get("y", obj.attrib.get("Y", 0))) * scale_y
         objct["depth"] = float(obj.attrib.get("depth", obj.attrib.get("Depth", 0)))
         
         sprite = None
