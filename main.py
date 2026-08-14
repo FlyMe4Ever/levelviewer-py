@@ -34,25 +34,34 @@ def process_layer(layer, map_w, map_h, prefix_id, atlas_mgr):
     layer_name = layer.attrib.get("Name", "unknown")
     layer_entry = {"name": layer_name, "objects": []}
 
-    for obj in layer.findall('Obj'):
+    objs = sorted(layer.findall('Obj'),
+                  key=lambda o: float(o.attrib.get("Depth", 0)))
+
+    for obj in objs:
         objct = {}
         objct["x"] = float(obj.attrib.get("x", obj.attrib.get("X", 0))) * scale_x
         objct["y"] = map_h - float(obj.attrib.get("y", obj.attrib.get("Y", 0))) * scale_y
         objct["depth"] = float(obj.attrib.get("depth", obj.attrib.get("Depth", 0)))
-        
+        objct["rotation"] = float(obj.attrib.get("rotation", obj.attrib.get("Rotation", 0)))
+        objct["flip_x"] = obj.attrib.get("IsXFlipped", "false") == "true"
+
         sprite = None
         seq_id_raw = obj.attrib.get("SeqID")
         if seq_id_raw is not None:
             try:
-                seq_id = int(seq_id_raw)
+                seq_id = int(seq_id_raw)    
                 sprite = atlas_mgr.get_sprite(prefix_id, seq_id, layer_name)
             except ValueError:
                 pass
 
-        if sprite is not None and (scale_x != 1 or scale_y != 1):
-            new_size = (max(1, int(sprite.get_width() * scale_x)),
-                        max(1, int(sprite.get_height() * scale_y)))
-            sprite = pygame.transform.smoothscale(sprite, new_size)
+        if sprite is not None :
+            if objct["flip_x"]:
+                sprite = pygame.transform.flip(sprite, True, False)
+            if objct["rotation"] != 0:
+                sprite = pygame.transform.rotate(sprite, -objct["rotation"])
+            if scale_x != 1 or scale_y != 1:
+                new_size = (max(1, int(sprite.get_width() * scale_x)), max(1, int(sprite.get_height() * scale_y)))
+                sprite = pygame.transform.smoothscale(sprite, new_size)
 
 
         objct["seq_id"] = seq_id_raw
