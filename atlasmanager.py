@@ -3,7 +3,7 @@ import glob
 import xml.etree.ElementTree as ET
 import pygame
 
-# this is the function that handle the management of the sprite atlas: parsing,splitting, caching and extracting 
+# this is the function that handle the management of the sprite atlas:  parsing,splitting, caching and extracting 
 
 class AtlasManager:
 
@@ -16,6 +16,10 @@ class AtlasManager:
             atlas_name = os.path.splitext(os.path.basename(xml_path))[0]
             atlas_root = ET.parse(xml_path).getroot()
             texture_path = os.path.join(png_dir, atlas_root.attrib["Texture"])
+            if not os.path.isfile(texture_path):
+                print(f"warning: atlas {atlas_name} wants texture "
+                      f"{atlas_root.attrib['Texture']}, not found in {texture_path}")
+                continue
 
             surface = pygame.image.load(texture_path).convert_alpha()
             frames = {}  # for animated
@@ -56,6 +60,13 @@ class AtlasManager:
         w, h = int(frame["W"]), int(frame["H"])
         offx, offy = float(frame["OffX"]), float(frame["OffY"])
         srcw, srch = int(frame["SrcW"]), int(frame["SrcH"])
+        rotated = frame["Rotated"] == "true"
+
+        if rotated:
+            piece = atlas_surface.subsurface(pygame.Rect(x, y, h, w)).copy()
+            piece = pygame.transform.rotate(piece, 90)
+        else:
+            piece = atlas_surface.subsurface(pygame.Rect(x, y, w, h)).copy()
 
         piece = atlas_surface.subsurface(pygame.Rect(x, y, w, h))
 
