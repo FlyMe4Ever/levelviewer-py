@@ -72,9 +72,15 @@ suite_id = suite_el.attrib.get('ID') if suite_el is not None else None
 map_w = float(root.attrib['Width'])
 map_h = float(root.attrib['Height'])
 
+DISPLAY_SCALE = 0.5   # the scale of the window so we can see the entire map on the screen
+
+window_w = int(map_w * DISPLAY_SCALE)
+window_h = int(map_h * DISPLAY_SCALE)
+
+screen = pygame.display.set_mode((window_w, window_h))   # real small window
+render_surface = pygame.Surface((map_w, map_h))           # original full size content
 
 pygame.init()
-screen = pygame.display.set_mode((map_w, map_h))
 clock = pygame.time.Clock()
 
 
@@ -107,7 +113,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    screen.fill((0, 0, 0))
+    render_surface.fill((0, 0, 0))
 
     for layer_entry in all_layers:
         color = layer_colors.get(layer_entry["name"], (200, 200, 200))
@@ -115,11 +121,16 @@ while running:
             x, y = int(obj["x"]), int(obj["y"])
             sprite = obj["sprite"]
             if sprite is not None:
+
                 # X/Y is the sprite center, like cocos 2d
                 rect = sprite.get_rect(center=(x, y))
-                screen.blit(sprite, rect)
+                render_surface.blit(sprite, rect)
             else:
-                pygame.draw.rect(screen, color, (x, y, 16, 16))
+                pygame.draw.rect(render_surface, color, (x, y, 16, 16))
+
+    # scale down to fit the window
+    scaled = pygame.transform.smoothscale(render_surface, (window_w, window_h))
+    screen.blit(scaled, (0, 0))
 
     pygame.display.flip()
     clock.tick(60)
